@@ -1,0 +1,33 @@
+name: markdown-to-confluence
+description: This syncs a given directory or single file as child page(s) to a Confluence parent ID page.
+inputs:
+  cloud:
+    description: the Confluence cloud instance name
+    required: true
+  user:
+    description: the user with sufficient privileges to create pages
+    required: true
+  token:
+    description: user token
+    required: true
+  parent_page_id:
+    description: the page ID of the parent page. The childpages will appear under this page.
+    required: true
+  space_id:
+    description: the Confluence space id
+    required: true
+  input_md_directory:
+    description: the directory where the markdown files to sync
+    required: false
+  input_file:
+    description: the location of the markdown file to sync
+    required: false
+  exclude_files:
+    description: markdown files to exclude from syncing
+    required: false
+outputs:
+  links:
+    description: title and link of uploaded or updated page(s)
+runs:
+  using: docker
+  image: Dockerfile
