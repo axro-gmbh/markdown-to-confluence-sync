@@ -3,13 +3,14 @@
 This syncs markdown files from a file or folder to Confluence as child pages
 of a given parent, with their docstring, HTML formatted.
 It uses v2 of the Confluence API, and can exclude files.
-If selecting a single file, it assumes the file you want to sync is in the main repo dir.
+If selecting a single file, it assumes the file you want to sync is in the main repo directory.
 """
 
 import os
 import sys
 import requests
-from markdown_it import MarkdownIt
+from markdown import markdown
+from mdx_gfm import GithubFlavoredMarkdownExtension
 
 
 def load_environment_variables():
@@ -21,7 +22,7 @@ def load_environment_variables():
         "user",
         "token",
         "parent_page_id",
-        "space_id",
+        "space_key",
     ]
 
     envs = {}
@@ -31,12 +32,17 @@ def load_environment_variables():
             print(f"Missing value for {var_name}")
             sys.exit(1)
 
-    if "input_file" in os.environ:
+    if "input_file" in os.environ and os.environ["input_file"]:
         envs["input_file"] = os.environ["input_file"]
-    if "input_md_directory" in os.environ:
-        envs["input_md_directory"] = os.environ["input_md_directory"]
-    if "exclude_files" in os.environ:
+    if "input_directory" in os.environ and os.environ["input_directory"]:
+        envs["input_directory"] = os.environ["input_directory"]
+    if "exclude_files" in os.environ and os.environ["exclude_files"]:
         envs["exclude_files"] = os.environ["exclude_files"]
+
+    envs["space_id"] = get_key_by_space_id(envs)
+    if not envs["space_id"]:
+        print(f"Space ID for key {envs["space_key"]} not found.")
+        sys.exit(1)
 
     return envs
 
@@ -53,8 +59,7 @@ def render_html(md_content):
     """
     Render the page so Confluence understands it
     """
-    markdown = MarkdownIt()
-    return markdown.render(md_content)
+    return markdown(md_content, extensions=[GithubFlavoredMarkdownExtension()])
 
 
 def get_page_title(md_file):
@@ -69,7 +74,7 @@ def process_directory(envs, links):
     Process a directory of markdown files
     """
     md_directory = os.path.join(
-        os.environ["GITHUB_WORKSPACE"], envs["input_md_directory"]
+        os.environ["GITHUB_WORKSPACE"], envs["input_directory"]
     )
     if envs.get("exclude_files"):
         exclude_files = envs["exclude_files"].split(",")
@@ -111,8 +116,8 @@ def update_confluence_page(envs, config, links):
 
     if update_response.status_code == 200:
         updated_link = (
-            f"https://{envs['cloud']}.atlassian.net/wiki"
-            + update_response.json()["_links"]["webui"]
+                f"https://{envs['cloud']}.atlassian.net/wiki"
+                + update_response.json()["_links"]["webui"]
         )
         links.append(f"{config['page_title']}: {updated_link}")
         print(f"{config['page_title']}: Success. New version: {config['new_version']}")
@@ -142,11 +147,10 @@ def create_confluence_page(envs, page_title, html, links):
         headers=headers,
         timeout=10,
     )
-
     if response.status_code == 200:
         link = (
-            f"https://{envs['cloud']}.atlassian.net/wiki"
-            + response.json()["_links"]["webui"]
+                f"https://{envs['cloud']}.atlassian.net/wiki"
+                + response.json()["_links"]["webui"]
         )
         links.append(f"{page_title}: {link}")
         print(f"{page_title}: Content upload successful.")
@@ -193,6 +197,7 @@ def find_page_by_title(page_title, envs):
     """
     Find a Confluence page by title.
     """
+
     url = f"https://{envs['cloud']}.atlassian.net/wiki/api/v2/pages"
     params = {
         "title": page_title,
@@ -207,13 +212,35 @@ def find_page_by_title(page_title, envs):
     )
     if response.status_code == 200:
         data = response.json()
+
         if data.get("results"):
-            page_id = data["results"]["id"]
-            version_number = data["results"]["version"]["number"]
-            existing_content = data["results"]["body"]["storage"]
+            page_id = data["results"][0]["id"]
+            version_number = data["results"][0]["version"]["number"]
+            existing_content = None
             return page_id, version_number, existing_content
 
-    return None, None
+    return None, None, None
+
+
+def get_key_by_space_id(envs):
+    """
+    Get the key by space ID
+    """
+    url = f"https://{envs['cloud']}.atlassian.net/wiki/api/v2/spaces/"
+    headers = {"Accept": "application/json"}
+    response = requests.get(
+        url,
+        auth=(envs["user"], envs["token"]),
+        headers=headers,
+        timeout=10,
+    )
+    if response.status_code == 200:
+        data = response.json()
+        for space in data["results"]:
+            if space["key"] == envs["space_key"]:
+                return space["id"]
+
+    return None
 
 
 def main():
@@ -227,7 +254,7 @@ def main():
         # Process a single file
         single_file = os.path.join(os.environ["GITHUB_WORKSPACE"], envs["input_file"])
         links = process_file(single_file, envs, links)
-    elif "input_md_directory" in envs:
+    elif "input_directory" in envs:
         # Process a directory of markdown files
         links = process_directory(envs, links)
     else:
