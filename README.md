@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: axro-gmbh/markdown-to-confluence-sync@1.0
+      - uses: axro-gmbh/markdown-to-confluence-sync@1.1
         with:
           input_directory: docs
           exclude_files: this.md,that.md
