@@ -28,6 +28,9 @@ inputs:
   exclude_files:
     description: markdown files to exclude from syncing
     required: false
+  full_width:
+    description: create Confluence page in full-width
+    required: false
 outputs:
   links:
     description: title and link of uploaded or updated page(s)
