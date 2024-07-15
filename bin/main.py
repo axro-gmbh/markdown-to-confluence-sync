@@ -17,29 +17,29 @@ def load_environment_variables():
     """
     Load environment variables and check for required values.
     """
-    env_var_names = [
-        "cloud",
-        "user",
-        "token",
-        "parent_page_id",
-        "space_key",
-    ]
+    env_var_names = {
+        "cloud": "INPUT_CLOUD",
+        "user": "INPUT_USER",
+        "token": "INPUT_TOKEN",
+        "parent_page_id": "INPUT_PARENT_PAGE_ID",
+        "space_key": "INPUT_SPACE_KEY",
+    }
 
     envs = {}
-    for var_name in env_var_names:
-        envs[var_name] = os.environ.get(var_name)
+    for var_name, env_name in env_var_names.items():
+        envs[var_name] = os.environ[env_name]
         if not envs[var_name]:
             print(f"Missing value for {var_name}")
             sys.exit(1)
 
-    if "input_file" in os.environ and os.environ["input_file"]:
-        envs["input_file"] = os.environ["input_file"]
-    if "input_directory" in os.environ and os.environ["input_directory"]:
-        envs["input_directory"] = os.environ["input_directory"]
-    if "exclude_files" in os.environ and os.environ["exclude_files"]:
-        envs["exclude_files"] = os.environ["exclude_files"]
-    if "full_width" in os.environ and os.environ["full_width"]:
-        envs["full_width"] = os.environ["full_width"]
+    if "INPUT_INPUT_FILE" in os.environ and os.environ["INPUT_INPUT_FILE"]:
+        envs["input_file"] = os.environ["INPUT_INPUT_FILE"]
+    if "INPUT_INPUT_DIRECTORY" in os.environ and os.environ["INPUT_INPUT_DIRECTORY"]:
+        envs["input_directory"] = os.environ["INPUT_INPUT_DIRECTORY"]
+    if "INPUT_EXCLUDE_FILES" in os.environ and os.environ["INPUT_EXCLUDE_FILES"]:
+        envs["exclude_files"] = os.environ["INPUT_EXCLUDE_FILES"]
+    if "INPUT_FULL_WIDTH" in os.environ and os.environ["INPUT_FULL_WIDTH"]:
+        envs["full_width"] = os.environ["INPUT_FULL_WIDTH"]
 
     envs["space_id"] = get_key_by_space_id(envs)
     if not envs["space_id"]:
