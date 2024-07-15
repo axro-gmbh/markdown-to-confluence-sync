@@ -38,6 +38,8 @@ def load_environment_variables():
         envs["input_directory"] = os.environ["input_directory"]
     if "exclude_files" in os.environ and os.environ["exclude_files"]:
         envs["exclude_files"] = os.environ["exclude_files"]
+    if "full_width" in os.environ and os.environ["full_width"]:
+        envs["full_width"] = os.environ["full_width"]
 
     envs["space_id"] = get_key_by_space_id(envs)
     if not envs["space_id"]:
@@ -148,6 +150,8 @@ def create_confluence_page(envs, page_title, html, links):
         timeout=10,
     )
     if response.status_code == 200:
+        if envs.get("full_width"):
+            set_full_width_page(envs, response.json()["id"])
         link = (
                 f"https://{envs['cloud']}.atlassian.net/wiki"
                 + response.json()["_links"]["webui"]
@@ -156,6 +160,25 @@ def create_confluence_page(envs, page_title, html, links):
         print(f"{page_title}: Content upload successful.")
     else:
         print(f"{page_title}: Failed. HTTP status code: {response.status_code}")
+
+
+def set_full_width_page(envs, page_id):
+    """
+    Set the page to full width
+    """
+    url = f"https://{envs['cloud']}.atlassian.net/wiki/api/v2/pages/{page_id}/properties"
+    content = {
+        "key": "content-appearance-published",
+        "value": "full-width"
+    }
+    headers = {"Accept": "application/json", "Content-Type": "application/json"}
+    response = requests.post(
+        url,
+        json=content,
+        auth=(envs["user"], envs["token"]),
+        headers=headers,
+        timeout=10,
+    )
 
 
 def process_file(md_file, envs, links):

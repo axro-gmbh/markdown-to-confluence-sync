@@ -54,6 +54,8 @@ Uses a token for the REST API v2.
 
 - `exclude_files`: If there are files in the folder you would want to exclude
 
+- `full_width`: If set to `true`, it will create the confluence page with full width
+
 ## Where you can find the data (cloud, space_key, parent_page_id, API-Token) in Confluence
 
 ### Cloud, Space Key and Parent Page ID
