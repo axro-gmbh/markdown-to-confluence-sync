@@ -1,5 +1,8 @@
 name: markdown-to-confluence-sync
 description: This syncs a given directory or single file as child page(s) to a Confluence parent ID page.
+branding:
+  icon: upload-cloud
+  color: green
 inputs:
   cloud:
     description: the Confluence cloud instance name
