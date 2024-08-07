@@ -28,9 +28,6 @@ jobs:
           token: ${{ secrets.JIRA_TOKEN }}
 ```
 
-## Merge
-Before a PR is merged, check if the Changelog.md file is in the docs folder.
-
 ## Authentication
 
 Uses a token for the REST API v2.
