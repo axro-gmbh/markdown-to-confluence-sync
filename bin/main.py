@@ -66,8 +66,12 @@ def render_html(md_content):
 
 def get_page_title(md_file):
     """
-    Extract the page title from the Markdown file title
+    Extract the page title from the Markdown title if not set use filename
     """
+    with open(md_file, 'r', encoding='utf-8') as f:
+        first_line = f.readline().strip()
+        if first_line.startswith('# '):
+            return first_line[2:].strip()
     return os.path.splitext(os.path.basename(md_file))[0]
 
 
