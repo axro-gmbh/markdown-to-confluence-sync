@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: axro-gmbh/markdown-to-confluence-sync@1.2
+      - uses: axro-gmbh/markdown-to-confluence-sync@1.4
         with:
           input_directory: docs
           exclude_files: this.md,that.md
@@ -37,9 +37,9 @@ Uses a token for the REST API v2.
 
 ## Input variables
 
-- `input_directory`: The folder you want to sync
+- `input_directory`: The directory or directories (comma seperated) you want to sync
 
-- `input_file`: If you don't want to sync a folder, you can also sync a single markdown file.
+- `input_file`: If you don't want to sync a folder, you can also sync a single markdown file
 
 *WARNING! USE ONLY ONE OF THE VARIABLES! (but one of them is required)*
 
@@ -51,7 +51,7 @@ Uses a token for the REST API v2.
 
 - `user`: The user that generated the access token
 
-- `token`: the Confluence API token.
+- `token`: The Confluence API token
 
 *Optional*:
 

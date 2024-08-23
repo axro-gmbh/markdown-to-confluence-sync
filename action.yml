@@ -20,7 +20,7 @@ inputs:
     description: the Confluence space key
     required: true
   input_directory:
-    description: the directory where the markdown files to sync
+    description: the directory or directories (comma seperated) with markdown files to sync
     required: false
   input_file:
     description: the location of the markdown file to sync

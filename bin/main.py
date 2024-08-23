@@ -35,7 +35,7 @@ def load_environment_variables():
     if "INPUT_INPUT_FILE" in os.environ and os.environ["INPUT_INPUT_FILE"]:
         envs["input_file"] = os.environ["INPUT_INPUT_FILE"]
     if "INPUT_INPUT_DIRECTORY" in os.environ and os.environ["INPUT_INPUT_DIRECTORY"]:
-        envs["input_directory"] = os.environ["INPUT_INPUT_DIRECTORY"]
+        envs["input_directory"] = os.environ["INPUT_INPUT_DIRECTORY"].split(",")
     if "INPUT_EXCLUDE_FILES" in os.environ and os.environ["INPUT_EXCLUDE_FILES"]:
         envs["exclude_files"] = os.environ["INPUT_EXCLUDE_FILES"]
     if "INPUT_FULL_WIDTH" in os.environ and os.environ["INPUT_FULL_WIDTH"]:
@@ -75,23 +75,22 @@ def get_page_title(md_file):
     return os.path.splitext(os.path.basename(md_file))[0]
 
 
-def process_directory(envs, links):
+def process_directories(envs, links):
     """
-    Process a directory of markdown files
+    Process multiple directories of markdown files
     """
-    md_directory = os.path.join(
-        os.environ["GITHUB_WORKSPACE"], envs["input_directory"]
-    )
-    if envs.get("exclude_files"):
-        exclude_files = envs["exclude_files"].split(",")
-    else:
-        exclude_files = []
+    for directory in envs["input_directory"]:
+        md_directory = os.path.join(os.environ["GITHUB_WORKSPACE"], directory)
+        if envs.get("exclude_files"):
+            exclude_files = envs["exclude_files"].split(",")
+        else:
+            exclude_files = []
 
-    for root, _, files in os.walk(md_directory):
-        for f in files:
-            if f.endswith(".md") and f not in exclude_files:
-                md_file = os.path.join(root, f)
-                links = process_file(md_file, envs, links)
+        for root, _, files in os.walk(md_directory):
+            for f in files:
+                if f.endswith(".md") and f not in exclude_files:
+                    md_file = os.path.join(root, f)
+                    links = process_file(md_file, envs, links)
 
     return links
 
@@ -282,8 +281,8 @@ def main():
         single_file = os.path.join(os.environ["GITHUB_WORKSPACE"], envs["input_file"])
         links = process_file(single_file, envs, links)
     elif "input_directory" in envs:
-        # Process a directory of markdown files
-        links = process_directory(envs, links)
+        # Process multiple directories of markdown files
+        links = process_directories(envs, links)
     else:
         # Handle the case where neither are provided
         print("No specific input provided.")
