@@ -2,6 +2,9 @@
 
 This Action copies the contents of a Markdown `.md` file or folder to a Confluence cloud parent page.
 
+It uses the heading in the first line that begins with a single `#` as the Confluence page title otherwise,
+it takes the filename of the `.md` file as the page title.
+
 ## Getting Started
 
 ```yml
