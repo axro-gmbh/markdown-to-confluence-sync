@@ -43,7 +43,7 @@ def load_environment_variables():
 
     envs["space_id"] = get_key_by_space_id(envs)
     if not envs["space_id"]:
-        print(f"Space ID for key {envs["space_key"]} not found.")
+        print(f"Space ID for key {envs['space_key']} not found.")
         sys.exit(1)
 
     return envs
@@ -254,17 +254,28 @@ def get_key_by_space_id(envs):
     """
     url = f"https://{envs['cloud']}.atlassian.net/wiki/api/v2/spaces/"
     headers = {"Accept": "application/json"}
-    response = requests.get(
-        url,
-        auth=(envs["user"], envs["token"]),
-        headers=headers,
-        timeout=10,
-    )
-    if response.status_code == 200:
+
+    while url:
+        response = requests.get(
+            url,
+            auth=(envs["user"], envs["token"]),
+            headers=headers,
+            timeout=10,
+        )
+        if response.status_code != 200:
+            return None
+
         data = response.json()
-        for space in data["results"]:
-            if space["key"] == envs["space_key"]:
-                return space["id"]
+        for space in data.get("results", []):
+            if space.get("key") == envs["space_key"]:
+                return space.get("id")
+
+        next_link = data.get("_links", {}).get("next")
+        if next_link:
+            # next is a relative path like "/wiki/api/..."; prefix the host
+            url = f"https://{envs['cloud']}.atlassian.net{next_link}"
+        else:
+            url = None
 
     return None
 
